@@ -1,0 +1,56 @@
+plugins {
+    id 'java'
+}
+
+group = 'name.jurgenei.grammars'
+version = '0.1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.antlr:antlr4-runtime:4.13.2'
+    testImplementation 'junit:junit:4.13.2'
+}
+
+sourceSets {
+    main {
+        java {
+            // LexerAdaptor depends on generated ANTLRv4 lexer classes that are not wired in this slice yet.
+            srcDirs = []
+        }
+    }
+}
+
+tasks.register('verifyGrammarSources') {
+    group = 'verification'
+    description = 'Checks that ANTLRv4 grammar source files are present in the extracted module.'
+    doLast {
+        def required = [
+                'src/main/antlr/name/jurgenei/parsers/ANTLRv4Lexer.g4',
+                'src/main/antlr/name/jurgenei/parsers/ANTLRv4Parser.g4',
+                'src/main/java/name/jurgenei/parsers/LexerAdaptor.java'
+        ]
+        required.each { path ->
+            if (!file(path).isFile()) {
+                throw new GradleException("Missing required grammar file: ${path}")
+            }
+        }
+    }
+}
+
+tasks.withType(Test).configureEach {
+    useJUnit()
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyGrammarSources')
+}
+
