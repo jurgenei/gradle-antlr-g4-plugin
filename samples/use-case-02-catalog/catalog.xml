@@ -1,0 +1,8 @@
+<catalog>
+  <grammar
+      name="antlr4"
+      parser="name.jurgenei.parsers.ANTLRv4Parser"
+      lexer="name.jurgenei.parsers.ANTLRv4Lexer"
+      start-rule="grammarSpec"/>
+</catalog>
+

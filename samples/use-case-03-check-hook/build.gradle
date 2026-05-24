@@ -1,0 +1,12 @@
+plugins {
+    id 'java'
+    id 'antlr'
+    id 'xmlast'
+}
+
+// Keep grammar source checks in check lifecycle.
+tasks.named('check') {
+    dependsOn tasks.named('verifyGrammarSources')
+    dependsOn tasks.named('xmlast')
+}
+

@@ -1,0 +1,31 @@
+plugins {
+    id 'java'
+    id 'antlr'
+    id 'xmlast'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    antlr 'org.antlr:antlr4:4.13.2'
+    implementation 'org.antlr:antlr4-runtime:4.13.2'
+}
+
+tasks.named('xmlast', name.jurgenei.gradle.antlr.XmlAstGradleTask) {
+    sourceDirectory.set(layout.projectDirectory.dir('src/test/resources/antlr4'))
+    destinationDirectory.set(layout.buildDirectory.dir('xmlast-samples'))
+
+    catalogFile.set(layout.projectDirectory.file('samples/use-case-02-catalog/catalog.xml'))
+    catalogGrammar.set('antlr4')
+
+    // Optional override. If omitted, parser/lexer values from catalog are used.
+    parserClassName.set('name.jurgenei.parsers.ANTLRv4Parser')
+    lexerClassName.set('name.jurgenei.parsers.ANTLRv4Lexer')
+
+    includes.set(['**/*.g4'])
+    targetExtension.set('.xml')
+    runtimeClasspath.from(configurations.testRuntimeClasspath, files("$buildDir/classes/java/antlr"))
+}
+
