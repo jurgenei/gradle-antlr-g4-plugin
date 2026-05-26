@@ -75,17 +75,22 @@ jobs:
           echo "⚠ gradle-antlr-parse-plugin not available (optional); tests will proceed without it"
           exit 0
 
-      - name: Build gradle-antlr-parse-plugin when present
+      - name: Build gradle-antlr-parse-plugin when referenced
         shell: bash
         run: |
           set -euo pipefail
           ROOT_PARENT="$(dirname "$GITHUB_WORKSPACE")"
 
-          if [ -f "$ROOT_PARENT/gradle-antlr-parse-plugin/gradlew" ]; then
-            chmod +x "$ROOT_PARENT/gradle-antlr-parse-plugin/gradlew"
-            "$ROOT_PARENT/gradle-antlr-parse-plugin/gradlew" -p "$ROOT_PARENT/gradle-antlr-parse-plugin" --no-daemon clean build
+          if grep -q 'includeBuild("../gradle-antlr-parse-plugin")' settings.gradle; then
+            if [ -f "$ROOT_PARENT/gradle-antlr-parse-plugin/gradlew" ]; then
+              chmod +x "$ROOT_PARENT/gradle-antlr-parse-plugin/gradlew"
+              "$ROOT_PARENT/gradle-antlr-parse-plugin/gradlew" -p "$ROOT_PARENT/gradle-antlr-parse-plugin" --no-daemon clean build
+            else
+              echo "settings.gradle references gradle-antlr-parse-plugin, but repository is unavailable"
+              exit 1
+            fi
           else
-            echo "Skipping parse plugin build (repository not available)."
+            echo "Skipping parse plugin build (not referenced by settings.gradle)."
           fi
 
       - name: Run tests
