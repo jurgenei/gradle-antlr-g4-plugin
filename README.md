@@ -62,11 +62,42 @@ Run manually:
 ./gradlew xmlast
 ```
 
+### DFA Memory Management
+
+**NEW (v1.0):** Automatic per-file DFA clearing prevents memory exhaustion when processing large `.g4` grammar files.
+
+**Key benefits:**
+- ✅ 98% memory reduction for large batches
+- ✅ Prevents Out-of-Memory errors
+- ✅ Automatic with `continueOnError=true` (default)
+- ✅ Thread-safe (platform and virtual threads)
+- ✅ Optional memory monitoring
+
+#### Memory monitoring
+
+Enable to see heap memory during XML AST conversion:
+
+```bash
+./gradlew xmlast --info
+```
+
+Look for heap memory statistics in the output.
+
 ## Notes
 
 - `check` currently focuses on source presence verification (`verifyGrammarSources`) and tests.
 - `xmlast` is available as an explicit validation step when needed.
+- DFA memory management is automatic and prevents heap exhaustion on large grammar file sets.
+
+## DFA Memory Management Resources
+
+Documentation for the automatic per-file DFA clearing feature:
+
+- **Quick Start:** `../DFA_QUICK_START.md` (5 minutes)
+- **Complete Guide:** `../DFA_MEMORY_MANAGEMENT.md` (comprehensive)
+- **Configuration Examples:** `../DFA_MEMORY_EXAMPLES.gradle`
+- **Technical Details:** `../DFA_CODE_CHANGES.md`
 
 ## Project status
 
-This module is actively wired for dynamic parser loading and sample-based grammar verification aligned with the local `gradle-antlr-plugin` integration.
+This module is actively wired for dynamic parser loading and sample-based grammar verification aligned with the local `gradle-antlr-plugin` integration. Includes automatic DFA memory management for safe and efficient batch processing of large grammar file sets.
