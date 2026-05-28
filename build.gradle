@@ -70,7 +70,7 @@ publishing {
 }
 
 signing {
-    required { gradle.taskGraph.hasTask("publish") }
+    required = { gradle.taskGraph.hasTask("publish") }
     def signingKey = findProperty("signingKey")
     def signingPassword = findProperty("signingPassword")
     if (signingKey && signingPassword) {
@@ -97,8 +97,8 @@ dependencyCheck {
 // SpotBugs configuration
 spotbugs {
     ignoreFailures = false
-    effort = 'default'
-    reportLevel = 'medium'
+    effort = com.github.spotbugs.snom.Effort.valueOf('DEFAULT')
+    reportLevel = com.github.spotbugs.snom.Confidence.valueOf('MEDIUM')
 }
 
 tasks.named('spotbugsMain') {
@@ -200,15 +200,17 @@ tasks.register('compileAntlrSources', JavaCompile) {
 tasks.register('verifyGrammarSources') {
     group = 'verification'
     description = 'Checks that ANTLRv4 grammar source files are present in the extracted module.'
+    def required = [
+            'src/main/antlr/name/jurgenei/parsers/ANTLRv4Lexer.g4',
+            'src/main/antlr/name/jurgenei/parsers/ANTLRv4Parser.g4',
+            'src/main/java/name/jurgenei/parsers/LexerAdaptor.java'
+    ]
+    def requiredFiles = required.collect { layout.projectDirectory.file(it).asFile }
+    inputs.files(requiredFiles)
     doLast {
-        def required = [
-                'src/main/antlr/name/jurgenei/parsers/ANTLRv4Lexer.g4',
-                'src/main/antlr/name/jurgenei/parsers/ANTLRv4Parser.g4',
-                'src/main/java/name/jurgenei/parsers/LexerAdaptor.java'
-        ]
-        required.each { path ->
-            if (!file(path).isFile()) {
-                throw new GradleException("Missing required grammar file: ${path}")
+        requiredFiles.each { f ->
+            if (!f.isFile()) {
+                throw new GradleException("Missing required grammar file: ${f.path}")
             }
         }
     }

@@ -1,5 +1,7 @@
 # Samples (antlr-grammars-g4)
 
+![Conformance](https://img.shields.io/badge/Conformance-Check--All%20Passing-brightgreen)
+
 This directory contains Gradle build use-case examples for validating ANTLR v4 grammar samples with plugin ID `name.jurgenei.gradle.antlr`.
 
 Note: the plugin ID is `name.jurgenei.gradle.antlr`, while the default task name remains `xmlast`.
