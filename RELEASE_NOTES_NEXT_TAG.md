@@ -14,3 +14,9 @@ Scope: `antlr-grammars-g4` release notes sync for `0.1.1`
 - This release-note update is a repository-level sync entry for the release branch.
 - No additional release-note-only behavioral deltas are introduced in this file.
 
+## Quality Automation
+
+- Added baseline `qodana.yaml` for JVM community linting on JDK 21.
+- Added `.github/workflows/qodana_code_quality.yml` with triggers aligned to existing CI events.
+- Qodana workflow uses read-only permissions and publishes scan results without auto-fixes.
+
