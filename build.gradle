@@ -1,6 +1,8 @@
 plugins {
     id 'java'
     id 'antlr'
+    id 'java-gradle-plugin'
+    id 'com.gradle.plugin-publish' version '1.3.1'
     id 'name.jurgenei.gradle.antlr'
     id 'maven-publish'
     id 'signing'
@@ -11,6 +13,20 @@ plugins {
 
 group = 'name.jurgenei.grammars'
 version = '0.1.0'
+
+gradlePlugin {
+    website = 'https://github.com/jurgenei/antlr-grammars-g4'
+    vcsUrl = 'https://github.com/jurgenei/antlr-grammars-g4'
+    plugins {
+        g4Grammar {
+            id = 'name.jurgenei.grammars.g4'
+            implementationClass = 'name.jurgenei.grammars.g4.G4GrammarPlugin'
+            displayName = 'ANTLR Grammar G4 Module'
+            description = 'Grammar module utilities for ANTLR v4 self-grammar assets.'
+            tags.set(['antlr', 'grammar', 'g4'])
+        }
+    }
+}
 
 java {
     toolchain {
@@ -167,15 +183,20 @@ tasks.register('generateParserSources', JavaExec) {
 
 tasks.named('compileJava') {
     dependsOn tasks.named('generateParserSources')
-    // Do not compile G4 sources yet - wait for full gradle-antlr-plugin integration
-    source = []
+}
+
+tasks.named('javadoc') {
+    source = fileTree('src/main/java') {
+        include 'name/jurgenei/grammars/g4/G4GrammarPlugin.java'
+    }
 }
 
 sourceSets {
     main {
         java {
-            // Only compile if LexerAdaptor dependencies are available
-            srcDirs = []  // Temporarily disabled until full gradle-antlr-plugin integration
+            // Keep generated parser sources excluded, but compile regular Java sources.
+            srcDirs = ['src/main/java']
+            include 'name/jurgenei/grammars/g4/**'
         }
     }
     test {
