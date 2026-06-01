@@ -10,7 +10,7 @@ plugins {
 }
 
 group = 'name.jurgenei.grammars'
-version = '0.1.0'
+version = '0.1.1'
 
 java {
     toolchain {
@@ -21,6 +21,7 @@ java {
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
     mavenLocal()
 }
 
@@ -177,11 +178,63 @@ sourceSets {
             // Only compile if LexerAdaptor dependencies are available
             srcDirs = []  // Temporarily disabled until full gradle-antlr-plugin integration
         }
+        resources {
+            srcDir 'src/main/antlr'
+            include '**/*.g4'
+        }
     }
     test {
         java {
             // Include generated ANTLR sources for testing
             srcDirs += ["$buildDir/generated-src/antlr/main"]
+        }
+    }
+}
+
+tasks.named('jar', org.gradle.api.tasks.bundling.Jar) {
+    dependsOn tasks.named('compileAntlrSources')
+    from("$buildDir/classes/java/antlr") {
+        include '**/*.class'
+        into ''
+    }
+}
+
+tasks.named('sourcesJar', org.gradle.api.tasks.bundling.Jar) {
+    duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
+}
+
+tasks.register('verifyJarLayout') {
+    group = 'verification'
+    description = 'Verifies grammar jar contains ANTLR classes and .g4 files at expected package paths.'
+    dependsOn tasks.named('jar')
+    def jarArchive = tasks.named('jar', org.gradle.api.tasks.bundling.Jar).flatMap { it.archiveFile }
+    inputs.file(jarArchive)
+
+    doLast {
+        def jarFile = jarArchive.get().asFile
+        def zip = new java.util.zip.ZipFile(jarFile)
+        try {
+            def entries = zip.entries().collect { it.name }
+
+            def required = [
+                    'name/jurgenei/parsers/ANTLRv4Lexer.g4',
+                    'name/jurgenei/parsers/ANTLRv4Parser.g4'
+            ]
+
+            required.each { path ->
+                if (!entries.contains(path)) {
+                    throw new GradleException("Missing required jar entry: ${path} in ${jarFile.name}")
+                }
+            }
+
+            if (!entries.any { it ==~ /name\/jurgenei\/parsers\/ANTLRv4Lexer(\$.*)?\.class/ }) {
+                throw new GradleException("Missing required lexer class entry under name/jurgenei/parsers in ${jarFile.name}")
+            }
+            if (!entries.any { it ==~ /name\/jurgenei\/parsers\/ANTLRv4Parser(\$.*)?\.class/ }) {
+                throw new GradleException("Missing required parser class entry under name/jurgenei/parsers in ${jarFile.name}")
+            }
+        } finally {
+            zip.close()
         }
     }
 }
@@ -231,6 +284,7 @@ tasks.named('test') {
 
 tasks.named('check') {
     dependsOn tasks.named('verifyGrammarSources')
+    dependsOn tasks.named('verifyJarLayout')
 }
 
 tasks.named('xmlast', name.jurgenei.gradle.antlr.XmlAstGradleTask) {
