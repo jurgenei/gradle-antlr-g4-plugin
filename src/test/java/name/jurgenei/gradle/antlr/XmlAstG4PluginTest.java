@@ -1,7 +1,5 @@
-package name.jurgenei.grammars.g4;
+package name.jurgenei.gradle.antlr;
 
-import name.jurgenei.gradle.antlr.XmlAstG4GradleTask;
-import name.jurgenei.gradle.antlr.XmlAstG4Plugin;
 import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.Assert;
@@ -16,7 +14,9 @@ public class XmlAstG4PluginTest {
 
         new XmlAstG4Plugin().apply(project);
 
-        Assert.assertTrue(project.getTasks().getByName("g4XmlAst") instanceof XmlAstG4GradleTask);
+        final Object task = project.getTasks().getByName("g4XmlAst");
+        Assert.assertNotNull(task);
+        XmlAstG4GradleTask.class.cast(task);
     }
 
     @Test
@@ -26,7 +26,7 @@ public class XmlAstG4PluginTest {
 
         new XmlAstG4Plugin().apply(project);
 
-        final XmlAstG4GradleTask task = (XmlAstG4GradleTask) project.getTasks().getByName("g4XmlAst");
+        final XmlAstG4GradleTask task = XmlAstG4GradleTask.class.cast(project.getTasks().getByName("g4XmlAst"));
         Assert.assertEquals("antlr4", task.getGrammar().get());
         Assert.assertEquals("name.jurgenei.parsers.ANTLRv4Parser", task.getParserClassName().get());
         Assert.assertEquals("name.jurgenei.parsers.ANTLRv4Lexer", task.getLexerClassName().get());

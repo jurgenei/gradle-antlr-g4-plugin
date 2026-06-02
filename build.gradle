@@ -202,6 +202,10 @@ sourceSets {
             srcDirs = ['src/main/java']
             include 'name/jurgenei/gradle/antlr/**'
         }
+        resources {
+            srcDir 'src/main/antlr'
+            include 'name/jurgenei/parsers/*.g4'
+        }
     }
     test {
         java {
