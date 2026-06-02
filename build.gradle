@@ -11,19 +11,19 @@ plugins {
     id 'org.sonarqube' version '6.0.1.5171'
 }
 
-group = 'name.jurgenei.grammars'
-version = '0.1.1'
+group = 'name.jurgenei.gradle'
+version = '0.1.2'
 
 gradlePlugin {
     website = 'https://github.com/jurgenei/antlr-grammars-g4'
     vcsUrl = 'https://github.com/jurgenei/antlr-grammars-g4'
     plugins {
-        g4Grammar {
-            id = 'name.jurgenei.grammars.g4'
-            implementationClass = 'name.jurgenei.grammars.g4.G4GrammarPlugin'
-            displayName = 'ANTLR Grammar G4 Module'
-            description = 'Grammar module utilities for ANTLR v4 self-grammar assets.'
-            tags.set(['antlr', 'grammar', 'g4'])
+        xmlAstG4 {
+            id = 'name.jurgenei.gradle.antlr.g4'
+            implementationClass = 'name.jurgenei.gradle.antlr.XmlAstG4Plugin'
+            displayName = 'Gradle ANTLR G4 Plugin'
+            description = 'Preconfigured XML AST task support for ANTLRv4 grammar files.'
+            tags.set(['antlr', 'xml', 'ast', 'g4'])
         }
     }
 }
@@ -42,9 +42,11 @@ repositories {
 }
 
 dependencies {
+    implementation 'name.jurgenei.gradle:gradle-antlr-plugin:0.1.1'
     antlr 'org.antlr:antlr4:4.13.2'
     implementation 'org.antlr:antlr4:4.13.2'
     implementation 'org.antlr:antlr4-runtime:4.13.2'
+    testImplementation gradleTestKit()
     testImplementation 'junit:junit:4.13.2'
 }
 
@@ -198,6 +200,7 @@ sourceSets {
             // Keep generated parser sources excluded, but compile regular Java sources.
             srcDirs = ['src/main/java']
             include 'name/jurgenei/grammars/g4/**'
+            include 'name/jurgenei/gradle/antlr/**'
         }
         resources {
             srcDir 'src/main/antlr'
