@@ -25,13 +25,6 @@ gradlePlugin {
             description = 'Preconfigured XML AST task support for ANTLRv4 grammar files.'
             tags.set(['antlr', 'xml', 'ast', 'g4'])
         }
-        g4GrammarLegacy {
-            id = 'name.jurgenei.grammars.g4'
-            implementationClass = 'name.jurgenei.grammars.g4.G4GrammarPlugin'
-            displayName = 'Legacy ANTLR Grammar G4 Module'
-            description = 'Compatibility alias for the G4 plugin id.'
-            tags.set(['antlr', 'grammar', 'g4', 'legacy'])
-        }
     }
 }
 
