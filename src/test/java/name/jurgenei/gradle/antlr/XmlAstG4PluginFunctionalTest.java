@@ -1,4 +1,4 @@
-package name.jurgenei.grammars.g4;
+package name.jurgenei.gradle.antlr;
 
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;

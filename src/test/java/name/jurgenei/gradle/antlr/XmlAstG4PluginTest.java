@@ -1,5 +1,7 @@
 package name.jurgenei.grammars.g4;
 
+import name.jurgenei.gradle.antlr.XmlAstG4GradleTask;
+import name.jurgenei.gradle.antlr.XmlAstG4Plugin;
 import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.Assert;
