@@ -11,6 +11,13 @@ import org.gradle.api.Project;
  */
 @Deprecated(forRemoval = false)
 public final class G4GrammarPlugin implements Plugin<Project> {
+
+    /**
+     * Creates the legacy compatibility plugin adapter.
+     */
+    public G4GrammarPlugin() {
+    }
+
     @Override
     public void apply(final Project project) {
         new XmlAstG4Plugin().apply(project);
