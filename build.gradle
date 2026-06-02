@@ -22,8 +22,8 @@ group = 'name.jurgenei.gradle'
 version = '0.1.2'
 
 gradlePlugin {
-    website = 'https://github.com/jurgenei/antlr-grammars-g4'
-    vcsUrl = 'https://github.com/jurgenei/antlr-grammars-g4'
+    website = 'https://github.com/jurgenei/gradle-antlr-g4-plugin'
+    vcsUrl = 'https://github.com/jurgenei/gradle-antlr-g4-plugin'
     plugins {
         xmlAstG4 {
             id = 'name.jurgenei.gradle.antlr.g4'
@@ -63,10 +63,10 @@ publishing {
             from components.java
             
             pom {
-                name = 'ANTLR4 Grammar - G4 Self-Grammar'
-                description = 'ANTLR v4 self-grammar module'
-                url = 'https://github.com/jurgenei/antlr-grammars-g4'
-                
+                name = 'Gradle ANTLR G4 Plugin'
+                description = 'Gradle plugin for XML AST conversion of ANTLR v4 grammar files'
+                url = 'https://github.com/jurgenei/gradle-antlr-g4-plugin'
+
                 licenses {
                     license {
                         name = 'MIT License'
@@ -82,9 +82,9 @@ publishing {
                 }
                 
                 scm {
-                    connection = 'scm:git:https://github.com/jurgenei/antlr-grammars-g4.git'
-                    developerConnection = 'scm:git:ssh://git@github.com/jurgenei/antlr-grammars-g4.git'
-                    url = 'https://github.com/jurgenei/antlr-grammars-g4'
+                    connection = 'scm:git:https://github.com/jurgenei/gradle-antlr-g4-plugin.git'
+                    developerConnection = 'scm:git:ssh://git@github.com/jurgenei/gradle-antlr-g4-plugin.git'
+                    url = 'https://github.com/jurgenei/gradle-antlr-g4-plugin'
                 }
             }
         }
@@ -137,8 +137,8 @@ tasks.named('spotbugsMain') {
 // SonarQube configuration
 sonar {
     properties {
-        property "sonar.projectKey", "antlr-grammars-g4"
-        property "sonar.projectName", "ANTLR4 Grammar - G4"
+        property "sonar.projectKey", "gradle-antlr-g4-plugin"
+        property "sonar.projectName", "Gradle ANTLR G4 Plugin"
         property "sonar.sourceEncoding", "UTF-8"
         property "sonar.java.source", "21"
     }
