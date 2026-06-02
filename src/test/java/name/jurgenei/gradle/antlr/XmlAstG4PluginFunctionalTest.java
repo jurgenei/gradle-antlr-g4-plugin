@@ -1,0 +1,87 @@
+package name.jurgenei.gradle.antlr;
+
+import org.gradle.testkit.runner.BuildResult;
+import org.gradle.testkit.runner.GradleRunner;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+
+public class XmlAstG4PluginFunctionalTest {
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    @Test
+    public void registersG4XmlAstTask() throws Exception {
+        final File projectDir = temporaryFolder.newFolder("functional-registers-g4-xmlast");
+        writeSettings(projectDir);
+        writeBuildFile(projectDir, """
+                plugins {
+                    id 'java'
+                    id 'name.jurgenei.gradle.antlr.g4'
+                }
+                """);
+
+        final BuildResult result = run(projectDir, "tasks", "--all");
+
+        Assert.assertTrue("Expected g4XmlAst task to be listed", result.getOutput().contains("g4XmlAst"));
+    }
+
+    @Test
+    public void preconfiguredDefaultsAreApplied() throws Exception {
+        final File projectDir = temporaryFolder.newFolder("functional-g4-defaults");
+        writeSettings(projectDir);
+        writeBuildFile(projectDir, """
+                plugins {
+                    id 'java'
+                    id 'name.jurgenei.gradle.antlr.g4'
+                }
+
+                tasks.register('printG4Defaults') {
+                    doLast {
+                        def t = tasks.named('g4XmlAst').get()
+                        println "grammar=${t.grammar.get()}"
+                        println "parserClassName=${t.parserClassName.get()}"
+                        println "lexerClassName=${t.lexerClassName.get()}"
+                        println "startRule=${t.startRule.get()}"
+                    }
+                }
+                """);
+
+        final BuildResult result = run(projectDir, "printG4Defaults");
+        final String output = result.getOutput();
+
+        Assert.assertTrue(output.contains("grammar=antlr4"));
+        Assert.assertTrue(output.contains("parserClassName=name.jurgenei.parsers.ANTLRv4Parser"));
+        Assert.assertTrue(output.contains("lexerClassName=name.jurgenei.parsers.ANTLRv4Lexer"));
+        Assert.assertTrue(output.contains("startRule=grammarSpec"));
+    }
+
+    private static BuildResult run(final File projectDir, final String... args) {
+        return GradleRunner.create()
+                .withProjectDir(projectDir)
+                .withArguments(args)
+                .withPluginClasspath()
+                .build();
+    }
+
+    private static void writeSettings(final File projectDir) throws Exception {
+        Files.writeString(
+                projectDir.toPath().resolve("settings.gradle"),
+                "rootProject.name = 'g4-plugin-functional-test'\n",
+                StandardCharsets.UTF_8);
+    }
+
+    private static void writeBuildFile(final File projectDir, final String content) throws Exception {
+        Files.writeString(
+                projectDir.toPath().resolve("build.gradle"),
+                content,
+                StandardCharsets.UTF_8);
+    }
+}
+

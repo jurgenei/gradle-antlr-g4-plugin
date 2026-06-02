@@ -6,6 +6,15 @@ pluginManagement {
     }
 }
 
+def antlrCoreBuild = file('../gradle-antlr-plugin')
+if (antlrCoreBuild.isDirectory()) {
+    includeBuild('../gradle-antlr-plugin') {
+        dependencySubstitution {
+            substitute module('name.jurgenei.gradle:gradle-antlr-plugin') using project(':')
+        }
+    }
+}
+
 rootProject.name = 'antlr-grammars-g4'
 
 include(['use-case-01-direct', 'use-case-02-catalog', 'use-case-03-check-hook'])

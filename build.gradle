@@ -1,8 +1,16 @@
+/*
+ * ANTLR4 Language parser plugin.
+ * J.S.Hildebrand (c) 2026
+ */
+
+import name.jurgenei.gradle.antlr.XmlAstGradleTask
+
 plugins {
     id 'java'
     id 'antlr'
     id 'java-gradle-plugin'
     id 'com.gradle.plugin-publish' version '1.3.1'
+    id 'jacoco'
     id 'name.jurgenei.gradle.antlr'
     id 'maven-publish'
     id 'signing'
@@ -11,19 +19,19 @@ plugins {
     id 'org.sonarqube' version '6.0.1.5171'
 }
 
-group = 'name.jurgenei.grammars'
-version = '0.1.1'
+group = 'name.jurgenei.gradle'
+version = '0.1.2'
 
 gradlePlugin {
-    website = 'https://github.com/jurgenei/antlr-grammars-g4'
-    vcsUrl = 'https://github.com/jurgenei/antlr-grammars-g4'
+    website = 'https://github.com/jurgenei/gradle-antlr-g4-plugin'
+    vcsUrl = 'https://github.com/jurgenei/gradle-antlr-g4-plugin'
     plugins {
-        g4Grammar {
-            id = 'name.jurgenei.grammars.g4'
-            implementationClass = 'name.jurgenei.grammars.g4.G4GrammarPlugin'
-            displayName = 'ANTLR Grammar G4 Module'
-            description = 'Grammar module utilities for ANTLR v4 self-grammar assets.'
-            tags.set(['antlr', 'grammar', 'g4'])
+        xmlAstG4 {
+            id = 'name.jurgenei.gradle.antlr.g4'
+            implementationClass = 'name.jurgenei.gradle.antlr.XmlAstG4Plugin'
+            displayName = 'Gradle ANTLR G4 Plugin'
+            description = 'Preconfigured XML AST task support for ANTLRv4 grammar files.'
+            tags.set(['antlr', 'xml', 'ast', 'g4'])
         }
     }
 }
@@ -42,9 +50,11 @@ repositories {
 }
 
 dependencies {
+    implementation 'name.jurgenei.gradle:gradle-antlr-plugin:0.1.2'
     antlr 'org.antlr:antlr4:4.13.2'
     implementation 'org.antlr:antlr4:4.13.2'
     implementation 'org.antlr:antlr4-runtime:4.13.2'
+    testImplementation gradleTestKit()
     testImplementation 'junit:junit:4.13.2'
 }
 
@@ -54,10 +64,10 @@ publishing {
             from components.java
             
             pom {
-                name = 'ANTLR4 Grammar - G4 Self-Grammar'
-                description = 'ANTLR v4 self-grammar module'
-                url = 'https://github.com/jurgenei/antlr-grammars-g4'
-                
+                name = 'Gradle ANTLR G4 Plugin'
+                description = 'Gradle plugin for XML AST conversion of ANTLR v4 grammar files'
+                url = 'https://github.com/jurgenei/gradle-antlr-g4-plugin'
+
                 licenses {
                     license {
                         name = 'MIT License'
@@ -73,9 +83,9 @@ publishing {
                 }
                 
                 scm {
-                    connection = 'scm:git:https://github.com/jurgenei/antlr-grammars-g4.git'
-                    developerConnection = 'scm:git:ssh://git@github.com/jurgenei/antlr-grammars-g4.git'
-                    url = 'https://github.com/jurgenei/antlr-grammars-g4'
+                    connection = 'scm:git:https://github.com/jurgenei/gradle-antlr-g4-plugin.git'
+                    developerConnection = 'scm:git:ssh://git@github.com/jurgenei/gradle-antlr-g4-plugin.git'
+                    url = 'https://github.com/jurgenei/gradle-antlr-g4-plugin'
                 }
             }
         }
@@ -128,8 +138,8 @@ tasks.named('spotbugsMain') {
 // SonarQube configuration
 sonar {
     properties {
-        property "sonar.projectKey", "antlr-grammars-g4"
-        property "sonar.projectName", "ANTLR4 Grammar - G4"
+        property "sonar.projectKey", "gradle-antlr-g4-plugin"
+        property "sonar.projectName", "Gradle ANTLR G4 Plugin"
         property "sonar.sourceEncoding", "UTF-8"
         property "sonar.java.source", "21"
     }
@@ -198,6 +208,7 @@ sourceSets {
             // Keep generated parser sources excluded, but compile regular Java sources.
             srcDirs = ['src/main/java']
             include 'name/jurgenei/grammars/g4/**'
+            include 'name/jurgenei/gradle/antlr/**'
         }
         resources {
             srcDir 'src/main/antlr'
@@ -294,6 +305,51 @@ tasks.withType(Test).configureEach {
     useJUnit()
 }
 
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+tasks.named('test') {
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
+    classDirectories.setFrom(files(sourceSets.main.output.classesDirs))
+    sourceDirectories.setFrom(files(sourceSets.main.allSource.srcDirs))
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+}
+
+tasks.named('jacocoTestCoverageVerification') {
+    dependsOn tasks.named('jacocoTestReport')
+    classDirectories.setFrom(files(sourceSets.main.output.classesDirs))
+    sourceDirectories.setFrom(files(sourceSets.main.allSource.srcDirs))
+    violationRules {
+        rule {
+            element = 'BUNDLE'
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.20
+            }
+        }
+    }
+}
+
+tasks.register('coverage') {
+    group = 'verification'
+    description = 'Runs tests, generates JaCoCo report, and verifies minimum coverage threshold.'
+    dependsOn tasks.named('jacocoTestCoverageVerification')
+}
+
+tasks.matching { it.name == 'publishPlugins' }.configureEach {
+    notCompatibleWithConfigurationCache('publishPlugins uses Gradle Plugin Publish internals that are not configuration-cache serializable')
+}
+
 tasks.named('compileTestJava') {
     dependsOn tasks.named('compileAntlrSources')
     classpath += files("$buildDir/classes/java/antlr")
@@ -305,6 +361,7 @@ tasks.named('test') {
 
 tasks.named('check') {
     dependsOn tasks.named('verifyGrammarSources')
+    dependsOn tasks.named('jacocoTestCoverageVerification')
     dependsOn tasks.named('verifyJarLayout')
 }
 
@@ -323,5 +380,5 @@ tasks.named('xmlast', name.jurgenei.gradle.antlr.XmlAstGradleTask) {
 }
 
 tasks.named('check') {
-    // Skip xmlast for now - focus is on the refactored dynamic class loading test
+    dependsOn tasks.named('xmlast')
 }
