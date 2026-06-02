@@ -189,7 +189,7 @@ tasks.named('compileJava') {
 
 tasks.named('javadoc') {
     source = fileTree('src/main/java') {
-        include 'name/jurgenei/grammars/g4/G4GrammarPlugin.java'
+        include 'name/jurgenei/gradle/antlr/G4GrammarPlugin.java'
     }
 }
 
@@ -198,7 +198,7 @@ sourceSets {
         java {
             // Keep generated parser sources excluded, but compile regular Java sources.
             srcDirs = ['src/main/java']
-            include 'name/jurgenei/grammars/g4/**'
+            include 'name/jurgenei/gradle/antlr/**'
         }
     }
     test {
