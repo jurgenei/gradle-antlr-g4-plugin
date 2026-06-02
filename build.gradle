@@ -1,3 +1,10 @@
+/*
+ * ANTLR4 Language parser plugin.
+ * J.S.Hildebrand (c) 2026
+ */
+
+import name.jurgenei.gradle.antlr.XmlAstGradleTask
+
 plugins {
     id 'java'
     id 'antlr'
