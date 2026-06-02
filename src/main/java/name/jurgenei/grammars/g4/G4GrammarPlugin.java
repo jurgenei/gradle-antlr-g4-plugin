@@ -4,12 +4,16 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
 /**
- * Marker Gradle plugin used to validate publication metadata for this module.
+ * Legacy compatibility alias for the G4 XML AST plugin.
+ *
+ * <p>New builds should use {@link XmlAstG4Plugin} (and plugin id
+ * {@code name.jurgenei.gradle.antlr.g4}).</p>
  */
+@Deprecated(forRemoval = false)
 public final class G4GrammarPlugin implements Plugin<Project> {
     @Override
-    public void apply(Project project) {
-        // Intentionally no-op: this module primarily publishes grammar artifacts.
+    public void apply(final Project project) {
+        new XmlAstG4Plugin().apply(project);
     }
 }
 

@@ -11,19 +11,26 @@ plugins {
     id 'org.sonarqube' version '6.0.1.5171'
 }
 
-group = 'name.jurgenei.grammars'
-version = '0.1.0'
+group = 'name.jurgenei.gradle'
+version = '0.1.1'
 
 gradlePlugin {
-    website = 'https://github.com/jurgenei/antlr-grammars-g4'
-    vcsUrl = 'https://github.com/jurgenei/antlr-grammars-g4'
+    website = 'https://github.com/jurgenei/gradle-antlr-g4-plugin'
+    vcsUrl = 'https://github.com/jurgenei/gradle-antlr-g4-plugin'
     plugins {
-        g4Grammar {
+        xmlAstG4 {
+            id = 'name.jurgenei.gradle.antlr.g4'
+            implementationClass = 'name.jurgenei.grammars.g4.XmlAstG4Plugin'
+            displayName = 'Gradle ANTLR G4 Plugin'
+            description = 'Preconfigured XML AST task support for ANTLRv4 grammar files.'
+            tags.set(['antlr', 'xml', 'ast', 'g4'])
+        }
+        g4GrammarLegacy {
             id = 'name.jurgenei.grammars.g4'
             implementationClass = 'name.jurgenei.grammars.g4.G4GrammarPlugin'
-            displayName = 'ANTLR Grammar G4 Module'
-            description = 'Grammar module utilities for ANTLR v4 self-grammar assets.'
-            tags.set(['antlr', 'grammar', 'g4'])
+            displayName = 'Legacy ANTLR Grammar G4 Module'
+            description = 'Compatibility alias for the G4 plugin id.'
+            tags.set(['antlr', 'grammar', 'g4', 'legacy'])
         }
     }
 }
@@ -41,9 +48,11 @@ repositories {
 }
 
 dependencies {
+    implementation 'name.jurgenei.gradle:gradle-antlr-plugin:0.1.1'
     antlr 'org.antlr:antlr4:4.13.2'
     implementation 'org.antlr:antlr4:4.13.2'
     implementation 'org.antlr:antlr4-runtime:4.13.2'
+    testImplementation gradleTestKit()
     testImplementation 'junit:junit:4.13.2'
 }
 
@@ -53,10 +62,10 @@ publishing {
             from components.java
             
             pom {
-                name = 'ANTLR4 Grammar - G4 Self-Grammar'
-                description = 'ANTLR v4 self-grammar module'
-                url = 'https://github.com/jurgenei/antlr-grammars-g4'
-                
+                name = 'Gradle ANTLR G4 Plugin'
+                description = 'Gradle plugin for XML AST conversion of ANTLRv4 grammar files'
+                url = 'https://github.com/jurgenei/gradle-antlr-g4-plugin'
+
                 licenses {
                     license {
                         name = 'MIT License'
@@ -72,9 +81,9 @@ publishing {
                 }
                 
                 scm {
-                    connection = 'scm:git:https://github.com/jurgenei/antlr-grammars-g4.git'
-                    developerConnection = 'scm:git:ssh://git@github.com/jurgenei/antlr-grammars-g4.git'
-                    url = 'https://github.com/jurgenei/antlr-grammars-g4'
+                    connection = 'scm:git:https://github.com/jurgenei/gradle-antlr-g4-plugin.git'
+                    developerConnection = 'scm:git:ssh://git@github.com/jurgenei/gradle-antlr-g4-plugin.git'
+                    url = 'https://github.com/jurgenei/gradle-antlr-g4-plugin'
                 }
             }
         }
@@ -127,8 +136,8 @@ tasks.named('spotbugsMain') {
 // SonarQube configuration
 sonar {
     properties {
-        property "sonar.projectKey", "antlr-grammars-g4"
-        property "sonar.projectName", "ANTLR4 Grammar - G4"
+        property "sonar.projectKey", "gradle-antlr-g4-plugin"
+        property "sonar.projectName", "Gradle ANTLR G4 Plugin"
         property "sonar.sourceEncoding", "UTF-8"
         property "sonar.java.source", "21"
     }

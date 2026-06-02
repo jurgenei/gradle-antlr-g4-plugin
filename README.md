@@ -1,121 +1,108 @@
-# antlr-grammars-g4
+# Gradle ANTLR G4 Plugin
 
-![Conformance](https://img.shields.io/badge/Conformance-Check--All%20Passing-brightgreen)
-
-[![Test on Push](https://github.com/jurgenei/antlr-grammars-g4/actions/workflows/test-on-push.yml/badge.svg)](https://github.com/jurgenei/antlr-grammars-g4/actions/workflows/test-on-push.yml)
 ![Java](https://img.shields.io/badge/Java-21%2B-007396?logo=openjdk&logoColor=white)
 ![Gradle](https://img.shields.io/badge/Gradle-8%2B-02303A?logo=gradle&logoColor=white)
-![ANTLR](https://img.shields.io/badge/ANTLR-4.13.x-blue)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-ANTLR v4 self-grammar module extracted from `gradle-antlr-xml-plugin`.
+`gradle-antlr-g4-plugin` provides a preconfigured XML AST task for ANTLRv4 grammar files (`*.g4`).
 
-This repository packages the ANTLR v4 grammar (`ANTLRv4Lexer.g4` / `ANTLRv4Parser.g4`) and validates it against real `.g4` samples in test resources.
+It builds on `name.jurgenei.gradle.antlr` and gives you a ready-to-use task type and plugin for grammar-centric workflows.
 
-## What this repo contains
+## Use Cases
 
-- grammar sources: `src/main/antlr/name/jurgenei/parsers`
-- lexer support class: `src/main/java/name/jurgenei/parsers/LexerAdaptor.java`
-- sample inputs: `src/test/resources/antlr4`
-- dynamic-loading parser test: `src/test/java/name/jurgenei/parsers/G4LexerParserTest.java`
+- Validate large sets of `.g4` grammar files in CI
+- Generate XML AST artifacts for grammar analysis pipelines
+- Run parser checks with preconfigured ANTLRv4 defaults
+- Keep parser invocation as a standard Gradle task
 
-## Latest Insights (May 2026)
+## Install
 
-- XML AST conversion now supports bounded execution profiles through `executionModel` + `parallelism`
-  - `SEQUENTIAL`
-  - `PLATFORM_THREADS`
-  - `VIRTUAL_THREADS`
-- per-file DFA clearing is automatic in both success/failure paths, keeping memory bounded for large `.g4` corpora
-- per-file conversion output includes runtime metadata (`<file> <duration>s <lines>:<bytes> parsed`)
-- end-of-run summary now provides operational and performance signals:
-  - files processed / files with errors / success percentage
-  - estimated sequential time
-  - total processing time
-  - average time per file
-  - execution profile with speedup factor
-- fail-fast validation is enforced for invalid task inputs (for example blank `startRule`, invalid `executionModel`, non-positive `parallelism`)
-
-## Build model
-
-This project uses:
-
-- `antlr` plugin for source generation
-- local composite plugin include for `xmlast` via `../gradle-antlr-plugin`
-- custom tasks to generate and compile ANTLR sources into `build/classes/java/antlr`
-
-The generated parser/lexer classes are loaded dynamically in tests (reflection), so tests do not require direct compile-time references to generated classes.
-
-## Requirements
-
-- Java 21+
-- Gradle 8+
-
-## Quick start
-
-```bash
-./gradlew clean test
+```groovy
+plugins {
+    id 'name.jurgenei.gradle.antlr.g4' version '0.1.1'
+}
 ```
 
-## Important tasks
+Legacy id remains available for compatibility:
 
-- `generateLexerSources` - generates lexer sources from `ANTLRv4Lexer.g4`
-- `generateParserSources` - generates parser sources from `ANTLRv4Parser.g4`
-- `compileAntlrSources` - compiles generated sources + `LexerAdaptor`
-- `test` - runs dynamic-loading parser tests over sample `.g4` files
-- `xmlast` - optional conversion of sample `.g4` files to XML AST
+```groovy
+plugins {
+    id 'name.jurgenei.grammars.g4' version '0.1.1'
+}
+```
 
-## XML AST task
+## What the Plugin Adds
 
-The `xmlast` task is configured with:
+- `XmlAstG4GradleTask` task type
+- `g4XmlAst` pre-registered task
+- Auto-wiring to Java `classes` and runtime classpath when `java` plugin is present
 
+Default task conventions:
+
+- `grammar = antlr4`
 - `parserClassName = name.jurgenei.parsers.ANTLRv4Parser`
 - `lexerClassName = name.jurgenei.parsers.ANTLRv4Lexer`
 - `startRule = grammarSpec`
-- source directory: `src/test/resources/antlr4`
-- output directory: `build/xmlast-samples`
+- `includes = ['**/*.g4']`
 
-Run manually:
+## Quick Start
 
-```bash
-./gradlew xmlast
+```groovy
+plugins {
+    id 'java'
+    id 'name.jurgenei.gradle.antlr.g4' version '0.1.1'
+}
+
+tasks.named('g4XmlAst', name.jurgenei.grammars.g4.XmlAstG4GradleTask) {
+    sourceDirectory.set(layout.projectDirectory.dir('src/test/resources/antlr4'))
+    destinationDirectory.set(layout.buildDirectory.dir('xmlast-g4'))
+    targetExtension.set('.xml')
+    continueOnError.set(true)
+}
 ```
 
-### DFA Memory Management
-
-**NEW (v1.0):** Automatic per-file DFA clearing prevents memory exhaustion when processing large `.g4` grammar files.
-
-**Key benefits:**
-- ✅ 98% memory reduction for large batches
-- ✅ Prevents Out-of-Memory errors
-- ✅ Automatic with `continueOnError=true` (default)
-- ✅ Thread-safe (platform and virtual threads)
-- ✅ Optional memory monitoring
-
-#### Memory monitoring
-
-Enable to see heap memory during XML AST conversion:
+Run:
 
 ```bash
-./gradlew xmlast --info
+./gradlew g4XmlAst
 ```
 
-Look for heap memory statistics in the output.
+## Typical CI Flow
 
-## Notes
+```bash
+./gradlew clean check g4XmlAst
+```
 
-- `check` currently focuses on source presence verification (`verifyGrammarSources`) and tests.
-- `xmlast` is available as an explicit validation step when needed.
-- DFA memory management is automatic and prevents heap exhaustion on large grammar file sets.
+Useful helper tasks in this project:
 
-## DFA Memory Management Resources
+- `generateLexerSources`
+- `generateParserSources`
+- `compileAntlrSources`
+- `verifyGrammarSources`
+- `test`
 
-Documentation for the automatic per-file DFA clearing feature:
+## Repository Rename
 
-- **Quick Start:** `../DFA_QUICK_START.md` (5 minutes)
-- **Complete Guide:** `../DFA_MEMORY_MANAGEMENT.md` (comprehensive)
-- **Configuration Examples:** `../DFA_MEMORY_EXAMPLES.gradle`
-- **Technical Details:** `../DFA_CODE_CHANGES.md`
+This project is renamed from:
 
-## Project status
+- `https://github.com/jurgenei/antlr-grammars-g4`
 
-This module is actively wired for dynamic parser loading and sample-based grammar verification aligned with the local `gradle-antlr-plugin` integration. Includes automatic DFA memory management for safe and efficient batch processing of large grammar file sets.
+to:
+
+- `https://github.com/jurgenei/gradle-antlr-g4-plugin`
+
+## Development
+
+```bash
+./gradlew clean test
+./gradlew publishToMavenLocal
+```
+
+## Troubleshooting
+
+- `ClassNotFoundException` for parser/lexer classes:
+  - Run `compileAntlrSources`
+  - Ensure `runtimeClasspath` includes generated classes
+- No output files:
+  - Confirm `sourceDirectory` and include patterns
+  - Set `force = true` for a full pass
