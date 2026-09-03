@@ -2,11 +2,14 @@
 
 ![Conformance](https://img.shields.io/badge/Conformance-Check--All%20Passing-brightgreen)
 
-[![Test on Push](https://github.com/jurgenei/antlr-grammars-g4/actions/workflows/test-on-push.yml/badge.svg)](https://github.com/jurgenei/antlr-grammars-g4/actions/workflows/test-on-push.yml)
-![Java](https://img.shields.io/badge/Java-21%2B-007396?logo=openjdk&logoColor=white)
-![Gradle](https://img.shields.io/badge/Gradle-8%2B-02303A?logo=gradle&logoColor=white)
+[![Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/name.jurgenei.gradle.antlr.g4?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/name.jurgenei.gradle.antlr.g4)
+[![Build and Test](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/test-on-push.yml/badge.svg)](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/test-on-push.yml)
+[![Coverage CI](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/coverage.yml/badge.svg)](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/coverage.yml)
+[![Coverage](https://codecov.io/gh/jurgenei/gradle-antlr-g4-plugin/branch/main/graph/badge.svg)](https://codecov.io/gh/jurgenei/gradle-antlr-g4-plugin)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Java](https://img.shields.io/badge/java-21+-green.svg)](https://www.oracle.com/java/)
+[![Gradle](https://img.shields.io/badge/gradle-8+-blue.svg)](https://gradle.org/)
 ![ANTLR](https://img.shields.io/badge/ANTLR-4.13.x-blue)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ANTLR v4 self-grammar module extracted from `gradle-antlr-xml-plugin`.
 
