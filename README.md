@@ -2,11 +2,14 @@
 
 ![Conformance](https://img.shields.io/badge/Conformance-Check--All%20Passing-brightgreen)
 
-[![Test on Push](https://github.com/jurgenei/antlr-grammars-g4/actions/workflows/test-on-push.yml/badge.svg)](https://github.com/jurgenei/antlr-grammars-g4/actions/workflows/test-on-push.yml)
-![Java](https://img.shields.io/badge/Java-21%2B-007396?logo=openjdk&logoColor=white)
-![Gradle](https://img.shields.io/badge/Gradle-8%2B-02303A?logo=gradle&logoColor=white)
+[![Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/name.jurgenei.gradle.antlr.g4?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/name.jurgenei.gradle.antlr.g4)
+[![Build and Test](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/ci.yml/badge.svg?branch=release%2F0.1.2)](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/ci.yml?query=branch%3Arelease%2F0.1.2)
+[![Coverage CI](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/coverage.yml/badge.svg?branch=release%2F0.1.2)](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/coverage.yml?query=branch%3Arelease%2F0.1.2)
+[![Coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.codecov.io%2Fapi%2Fv2%2Fgithub%2Fjurgenei%2Frepos%2Fgradle-antlr-g4-plugin%2Fcommits%3Fbranch%3Drelease%252F0.1.2&query=%24.results%5B0%5D.totals.coverage&label=coverage&suffix=%25)](https://app.codecov.io/gh/jurgenei/gradle-antlr-g4-plugin?branch=release%2F0.1.2)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Java](https://img.shields.io/badge/java-21+-green.svg)](https://www.oracle.com/java/)
+[![Gradle](https://img.shields.io/badge/gradle-8+-blue.svg)](https://gradle.org/)
 ![ANTLR](https://img.shields.io/badge/ANTLR-4.13.x-blue)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ANTLR v4 self-grammar module extracted from `gradle-antlr-xml-plugin`.
 
@@ -79,6 +82,28 @@ Run manually:
 ```bash
 ./gradlew xmlast
 ```
+
+### S-expression output
+
+`g4XmlAst` supports XML and S-expression output formats from core `gradle-antlr-plugin` task API.
+
+```groovy
+tasks.named('g4XmlAst', name.jurgenei.gradle.antlr.XmlAstG4GradleTask) {
+    targetExtension.set('.sexpr')
+    sexprFormat.set('beautified')
+}
+```
+
+- `targetExtension`: `.xml` (default) or `.sexpr`
+- `sexprFormat`: `compact` (default) or `beautified`
+
+### Add new language plugin fast
+
+Use shared helpers from `gradle-antlr-plugin` to keep language module small:
+
+- `LanguageTaskDefaults` for parser/lexer/startRule/include defaults
+- `LanguagePluginSupport.registerXmlAstTask(...)` for task registration
+- `LanguagePluginSupport.wireJavaRuntimeClasspath(...)` for runtime classpath + `classes` dependency wiring
 
 ### DFA Memory Management
 
