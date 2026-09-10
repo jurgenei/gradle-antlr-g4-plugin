@@ -20,11 +20,13 @@ public abstract class XmlAstG4GradleTask extends XmlAstGradleTask {
     @Inject
     public XmlAstG4GradleTask(final ObjectFactory objects) {
         super(objects);
-        getGrammar().convention("antlr4");
-        getParserClassName().convention("name.jurgenei.parsers.ANTLRv4Parser");
-        getLexerClassName().convention("name.jurgenei.parsers.ANTLRv4Lexer");
-        getStartRule().convention("grammarSpec");
-        getIncludes().convention(List.of("**/*.g4"));
+        LanguageTaskDefaults.of(
+                "antlr4",
+                "name.jurgenei.parsers.ANTLRv4Parser",
+                "name.jurgenei.parsers.ANTLRv4Lexer",
+                "grammarSpec",
+                List.of("**/*.g4"))
+            .applyTo(this);
     }
 }
 

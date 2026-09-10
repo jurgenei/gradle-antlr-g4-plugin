@@ -83,6 +83,28 @@ Run manually:
 ./gradlew xmlast
 ```
 
+### S-expression output
+
+`g4XmlAst` supports XML and S-expression output formats from core `gradle-antlr-plugin` task API.
+
+```groovy
+tasks.named('g4XmlAst', name.jurgenei.gradle.antlr.XmlAstG4GradleTask) {
+    targetExtension.set('.sexpr')
+    sexprFormat.set('beautified')
+}
+```
+
+- `targetExtension`: `.xml` (default) or `.sexpr`
+- `sexprFormat`: `compact` (default) or `beautified`
+
+### Add new language plugin fast
+
+Use shared helpers from `gradle-antlr-plugin` to keep language module small:
+
+- `LanguageTaskDefaults` for parser/lexer/startRule/include defaults
+- `LanguagePluginSupport.registerXmlAstTask(...)` for task registration
+- `LanguagePluginSupport.wireJavaRuntimeClasspath(...)` for runtime classpath + `classes` dependency wiring
+
 ### DFA Memory Management
 
 **NEW (v1.0):** Automatic per-file DFA clearing prevents memory exhaustion when processing large `.g4` grammar files.

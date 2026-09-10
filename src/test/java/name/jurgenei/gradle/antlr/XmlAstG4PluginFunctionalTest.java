@@ -49,6 +49,8 @@ public class XmlAstG4PluginFunctionalTest {
                         println "parserClassName=${t.parserClassName.get()}"
                         println "lexerClassName=${t.lexerClassName.get()}"
                         println "startRule=${t.startRule.get()}"
+                        println "targetExtension=${t.targetExtension.get()}"
+                        println "sexprFormat=${t.sexprFormat.get()}"
                     }
                 }
                 """);
@@ -60,6 +62,39 @@ public class XmlAstG4PluginFunctionalTest {
         Assert.assertTrue(output.contains("parserClassName=name.jurgenei.parsers.ANTLRv4Parser"));
         Assert.assertTrue(output.contains("lexerClassName=name.jurgenei.parsers.ANTLRv4Lexer"));
         Assert.assertTrue(output.contains("startRule=grammarSpec"));
+        Assert.assertTrue(output.contains("targetExtension=.xml"));
+        Assert.assertTrue(output.contains("sexprFormat=compact"));
+    }
+
+    @Test
+    public void supportsSexprOutputConfiguration() throws Exception {
+        final File projectDir = temporaryFolder.newFolder("functional-g4-sexpr-overrides");
+        writeSettings(projectDir);
+        writeBuildFile(projectDir, """
+                plugins {
+                    id 'java'
+                    id 'name.jurgenei.gradle.antlr.g4'
+                }
+
+                tasks.named('g4XmlAst', name.jurgenei.gradle.antlr.XmlAstG4GradleTask) {
+                    targetExtension.set('.sexpr')
+                    sexprFormat.set('beautified')
+                }
+
+                tasks.register('printG4SexprDefaults') {
+                    doLast {
+                        def t = tasks.named('g4XmlAst').get()
+                        println "targetExtension=${t.targetExtension.get()}"
+                        println "sexprFormat=${t.sexprFormat.get()}"
+                    }
+                }
+                """);
+
+        final BuildResult result = run(projectDir, "printG4SexprDefaults");
+        final String output = result.getOutput();
+
+        Assert.assertTrue(output.contains("targetExtension=.sexpr"));
+        Assert.assertTrue(output.contains("sexprFormat=beautified"));
     }
 
     private static BuildResult run(final File projectDir, final String... args) {

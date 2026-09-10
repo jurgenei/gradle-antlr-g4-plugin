@@ -32,6 +32,23 @@ public class XmlAstG4PluginTest {
         Assert.assertEquals("name.jurgenei.parsers.ANTLRv4Lexer", task.getLexerClassName().get());
         Assert.assertEquals("grammarSpec", task.getStartRule().get());
         Assert.assertTrue(task.getIncludes().get().contains("**/*.g4"));
+        Assert.assertEquals(".xml", task.getTargetExtension().get());
+        Assert.assertEquals("compact", task.getSexprFormat().get());
+    }
+
+    @Test
+    public void supportsSexprOutputConfiguration() {
+        final Project project = ProjectBuilder.builder().build();
+        project.getPluginManager().apply("java");
+
+        new XmlAstG4Plugin().apply(project);
+
+        final XmlAstG4GradleTask task = XmlAstG4GradleTask.class.cast(project.getTasks().getByName("g4XmlAst"));
+        task.getTargetExtension().set(".sexpr");
+        task.getSexprFormat().set("beautified");
+
+        Assert.assertEquals(".sexpr", task.getTargetExtension().get());
+        Assert.assertEquals("beautified", task.getSexprFormat().get());
     }
 }
 
