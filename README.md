@@ -3,9 +3,10 @@
 ![Conformance](https://img.shields.io/badge/Conformance-Check--All%20Passing-brightgreen)
 
 [![Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/name.jurgenei.gradle.antlr.g4?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/name.jurgenei.gradle.antlr.g4)
-[![Build and Test](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/ci.yml/badge.svg?branch=release%2F0.1.2)](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/ci.yml?query=branch%3Arelease%2F0.1.2)
-[![Coverage CI](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/coverage.yml/badge.svg?branch=release%2F0.1.2)](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/coverage.yml?query=branch%3Arelease%2F0.1.2)
-[![Coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.codecov.io%2Fapi%2Fv2%2Fgithub%2Fjurgenei%2Frepos%2Fgradle-antlr-g4-plugin%2Fcommits%3Fbranch%3Drelease%252F0.1.2&query=%24.results%5B0%5D.totals.coverage&label=coverage&suffix=%25)](https://app.codecov.io/gh/jurgenei/gradle-antlr-g4-plugin?branch=release%2F0.1.2)
+[![Build and Test](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/ci.yml/badge.svg?branch=release%2F0.1.3)](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/ci.yml?query=branch%3Arelease%2F0.1.3)
+[![Coverage CI](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/coverage.yml/badge.svg?branch=release%2F0.1.3)](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/coverage.yml?query=branch%3Arelease%2F0.1.3)
+[![Coverage](https://codecov.io/gh/jurgenei/gradle-antlr-g4-plugin/graph/badge.svg?branch=release%2F0.1.3)](https://app.codecov.io/gh/jurgenei/gradle-antlr-g4-plugin?branch=release%2F0.1.3)
+[![Test on Push](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/test-on-push.yml/badge.svg?branch=release%2F0.1.3)](https://github.com/jurgenei/gradle-antlr-g4-plugin/actions/workflows/test-on-push.yml?query=branch%3Arelease%2F0.1.3)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/java-21+-green.svg)](https://www.oracle.com/java/)
 [![Gradle](https://img.shields.io/badge/gradle-8+-blue.svg)](https://gradle.org/)
@@ -13,7 +14,7 @@
 
 ANTLR v4 self-grammar module extracted from `gradle-antlr-xml-plugin`.
 
-This repository packages the ANTLR v4 grammar (`ANTLRv4Lexer.g4` / `ANTLRv4Parser.g4`) and validates it against real `.g4` samples in test resources.
+This repository packages ANTLR v4 grammar (`ANTLRv4Lexer.g4` / `ANTLRv4Parser.g4`) and validates against real `.g4` samples in test resources.
 
 ## What this repo contains
 
@@ -21,42 +22,58 @@ This repository packages the ANTLR v4 grammar (`ANTLRv4Lexer.g4` / `ANTLRv4Parse
 - lexer support class: `src/main/java/name/jurgenei/parsers/LexerAdaptor.java`
 - sample inputs: `src/test/resources/antlr4`
 - dynamic-loading parser test: `src/test/java/name/jurgenei/parsers/G4LexerParserTest.java`
+- grammar-to-class task: `name.jurgenei.gradle.xml.G4toClassTask`
 
-## Latest Insights (May 2026)
+## G4 -> GrammarModel -> AST Classes
 
-- XML AST conversion now supports bounded execution profiles through `executionModel` + `parallelism`
-  - `SEQUENTIAL`
-  - `PLATFORM_THREADS`
-  - `VIRTUAL_THREADS`
-- per-file DFA clearing is automatic in both success/failure paths, keeping memory bounded for large `.g4` corpora
-- per-file conversion output includes runtime metadata (`<file> <duration>s <lines>:<bytes> parsed`)
-- end-of-run summary now provides operational and performance signals:
-  - files processed / files with errors / success percentage
-  - estimated sequential time
-  - total processing time
-  - average time per file
-  - execution profile with speedup factor
-- fail-fast validation is enforced for invalid task inputs (for example blank `startRule`, invalid `executionModel`, non-positive `parallelism`)
+`G4toClassTask` converts `.g4` grammar files into two outputs per source file:
 
-## Build model
+- `<name>.model.sexp` (normalized GrammarModel)
+- `<name>.classes.sexp` (derived AST classes model)
 
-This project uses:
+Derivation semantics implemented:
 
-- `antlr` plugin for source generation
-- local composite plugin include for `xmlast` via `../gradle-antlr-plugin`
-- custom tasks to generate and compile ANTLR sources into `build/classes/java/antlr`
+- **1B**: parse-tree driven extraction (fallback text parser when parser classes unavailable)
+- **2A**: top-level alternatives always create inheritance `(isa Child Parent)`
+- **3A**: literal-only parser rules dropped from AST class output
 
-The generated parser/lexer classes are loaded dynamically in tests (reflection), so tests do not require direct compile-time references to generated classes.
+Task implementation uses `name.jurgenei.ast:ast-classes-core` dependency.
 
-## Requirements
+## Input/Output Modes (`G4toClassTask`)
 
-- Java 21+
-- Gradle 8+
+### 1) File-tree mode (`fileset`) with output directory
+
+```groovy
+tasks.named('g4ToClass', name.jurgenei.gradle.xml.G4toClassTask) {
+    fileset('src/main/antlr') {
+        include '**/*.g4'
+        exclude '**/legacy/**'
+    }
+    outputDir.set(layout.buildDirectory.dir('g4-classes'))
+}
+```
+
+### 2) Explicit single-file mode (`input` + `output`)
+
+```groovy
+tasks.register('deriveOne', name.jurgenei.gradle.xml.G4toClassTask) {
+    input 'src/main/antlr/Mini.g4'
+    output 'build/out/Mini.classes.sexp'
+    modelOutput 'build/out/Mini.model.sexp'
+}
+```
+
+Notes:
+
+- In explicit mode, `input` and `output` must be set together.
+- If `modelOutput` omitted, task auto-derives it from `output` using `.model.sexp` extension.
+- In file-tree mode, `outputDir` is required.
 
 ## Quick start
 
 ```bash
 ./gradlew clean test
+./gradlew g4ToClass
 ```
 
 ## Important tasks
@@ -65,11 +82,12 @@ The generated parser/lexer classes are loaded dynamically in tests (reflection),
 - `generateParserSources` - generates parser sources from `ANTLRv4Parser.g4`
 - `compileAntlrSources` - compiles generated sources + `LexerAdaptor`
 - `test` - runs dynamic-loading parser tests over sample `.g4` files
-- `xmlast` - optional conversion of sample `.g4` files to XML AST
+- `xmlast` - converts sample `.g4` files to XML AST
+- `g4ToClass` - converts sample `.g4` files to GrammarModel and AST classes outputs
 
 ## XML AST task
 
-The `xmlast` task is configured with:
+`xmlast` configured with:
 
 - `parserClassName = name.jurgenei.parsers.ANTLRv4Parser`
 - `lexerClassName = name.jurgenei.parsers.ANTLRv4Lexer`
@@ -83,64 +101,11 @@ Run manually:
 ./gradlew xmlast
 ```
 
-### S-expression output
-
-`g4XmlAst` supports XML and S-expression output formats from core `gradle-antlr-plugin` task API.
-
-```groovy
-tasks.named('g4XmlAst', name.jurgenei.gradle.antlr.XmlAstG4GradleTask) {
-    targetExtension.set('.sexpr')
-    sexprFormat.set('beautified')
-}
-```
-
-- `targetExtension`: `.xml` (default) or `.sexpr`
-- `sexprFormat`: `compact` (default) or `beautified`
-
-### Add new language plugin fast
-
-Use shared helpers from `gradle-antlr-plugin` to keep language module small:
-
-- `LanguageTaskDefaults` for parser/lexer/startRule/include defaults
-- `LanguagePluginSupport.registerXmlAstTask(...)` for task registration
-- `LanguagePluginSupport.wireJavaRuntimeClasspath(...)` for runtime classpath + `classes` dependency wiring
-
-### DFA Memory Management
-
-**NEW (v1.0):** Automatic per-file DFA clearing prevents memory exhaustion when processing large `.g4` grammar files.
-
-**Key benefits:**
-- ✅ 98% memory reduction for large batches
-- ✅ Prevents Out-of-Memory errors
-- ✅ Automatic with `continueOnError=true` (default)
-- ✅ Thread-safe (platform and virtual threads)
-- ✅ Optional memory monitoring
-
-#### Memory monitoring
-
-Enable to see heap memory during XML AST conversion:
-
-```bash
-./gradlew xmlast --info
-```
-
-Look for heap memory statistics in the output.
-
 ## Notes
 
-- `check` currently focuses on source presence verification (`verifyGrammarSources`) and tests.
-- `xmlast` is available as an explicit validation step when needed.
-- DFA memory management is automatic and prevents heap exhaustion on large grammar file sets.
-
-## DFA Memory Management Resources
-
-Documentation for the automatic per-file DFA clearing feature:
-
-- **Quick Start:** `../DFA_QUICK_START.md` (5 minutes)
-- **Complete Guide:** `../DFA_MEMORY_MANAGEMENT.md` (comprehensive)
-- **Configuration Examples:** `../DFA_MEMORY_EXAMPLES.gradle`
-- **Technical Details:** `../DFA_CODE_CHANGES.md`
+- `check` covers source presence verification (`verifyGrammarSources`), tests, coverage verification, jar layout verification, and XML AST validation.
+- `g4ToClass` available as dedicated grammar-model derivation task.
 
 ## Project status
 
-This module is actively wired for dynamic parser loading and sample-based grammar verification aligned with the local `gradle-antlr-plugin` integration. Includes automatic DFA memory management for safe and efficient batch processing of large grammar file sets.
+This module is actively wired for dynamic parser loading, sample-based grammar verification, and grammar-to-class derivation outputs aligned with local `gradle-antlr-plugin` integration.

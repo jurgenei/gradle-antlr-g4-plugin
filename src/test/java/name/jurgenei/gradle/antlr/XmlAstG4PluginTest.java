@@ -1,5 +1,6 @@
 package name.jurgenei.gradle.antlr;
 
+import name.jurgenei.gradle.xml.G4toClassTask;
 import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.Assert;
@@ -50,5 +51,18 @@ public class XmlAstG4PluginTest {
         Assert.assertEquals(".sexpr", task.getTargetExtension().get());
         Assert.assertEquals("beautified", task.getSexprFormat().get());
     }
-}
 
+    @Test
+    public void registersG4ToClassTaskWithDefaults() {
+        final Project project = ProjectBuilder.builder().build();
+
+        new XmlAstG4Plugin().apply(project);
+
+        final G4toClassTask task = G4toClassTask.class.cast(project.getTasks().getByName("g4ToClass"));
+        Assert.assertEquals(".classes.sexp", task.getClassOutputExtension().get());
+        Assert.assertEquals(".model.sexp", task.getModelOutputExtension().get());
+        Assert.assertEquals("name.jurgenei.parsers.ANTLRv4Parser", task.getParserClassName().get());
+        Assert.assertEquals("name.jurgenei.parsers.ANTLRv4Lexer", task.getLexerClassName().get());
+        Assert.assertEquals("grammarSpec", task.getStartRule().get());
+    }
+}
