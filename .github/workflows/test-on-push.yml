@@ -48,6 +48,33 @@ jobs:
           echo "✘ Could not clone gradle-antlr-plugin from any source"
           exit 1
 
+      - name: Ensure ast-classes-core is available
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT_PARENT="$(dirname "$GITHUB_WORKSPACE")"
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+
+          if [ -d "$ROOT_PARENT/ast-classes-core/.git" ]; then
+            echo "✓ ast-classes-core already present"
+            exit 0
+          fi
+
+          echo "Cloning ast-classes-core from $OWNER..."
+          if git clone --depth 1 "https://github.com/$OWNER/ast-classes-core.git" "$ROOT_PARENT/ast-classes-core"; then
+            echo "✓ Successfully cloned from $OWNER/ast-classes-core"
+            exit 0
+          fi
+
+          echo "Falling back to jurgenei/ast-classes-core..."
+          if git clone --depth 1 "https://github.com/jurgenei/ast-classes-core.git" "$ROOT_PARENT/ast-classes-core"; then
+            echo "✓ Successfully cloned from jurgenei/ast-classes-core"
+            exit 0
+          fi
+
+          echo "✘ Could not clone ast-classes-core from any source"
+          exit 1
+
       - name: Ensure gradle-antlr-parse-plugin is available (optional)
         shell: bash
         continue-on-error: true
@@ -97,4 +124,3 @@ jobs:
         run: |
           chmod +x ./gradlew
           ./gradlew --no-daemon --stacktrace :test
-

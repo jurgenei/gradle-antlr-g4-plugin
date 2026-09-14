@@ -1,10 +1,11 @@
 package name.jurgenei.gradle.antlr;
 
+import name.jurgenei.gradle.xml.G4toClassTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
 /**
- * Registers a G4-specific XML AST task with parser defaults for ANTLRv4 grammars.
+ * Registers G4-specific tasks for ANTLRv4 grammar processing.
  */
 public final class XmlAstG4Plugin implements Plugin<Project> {
 
@@ -22,6 +23,10 @@ public final class XmlAstG4Plugin implements Plugin<Project> {
                 XmlAstG4GradleTask.class,
                 "Convert ANTLRv4 grammar files to XML AST output.");
         LanguagePluginSupport.wireJavaRuntimeClasspath(project, XmlAstG4GradleTask.class);
+
+        project.getTasks().register("g4ToClass", G4toClassTask.class, task -> {
+            task.setGroup("xmlast");
+            task.setDescription("Convert ANTLRv4 grammar files to GrammarModel and AST-Classes output.");
+        });
     }
 }
-

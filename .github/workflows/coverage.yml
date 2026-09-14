@@ -47,6 +47,25 @@ jobs:
 
           git clone --depth 1 "https://github.com/jurgenei/gradle-antlr-plugin.git" "$ROOT_PARENT/gradle-antlr-plugin"
 
+      - name: Ensure ast-classes-core is available
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT_PARENT="$(dirname "$GITHUB_WORKSPACE")"
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+
+          if [ -d "$ROOT_PARENT/ast-classes-core/.git" ]; then
+            echo "ast-classes-core already present"
+            exit 0
+          fi
+
+          if git clone --depth 1 "https://github.com/$OWNER/ast-classes-core.git" "$ROOT_PARENT/ast-classes-core"; then
+            echo "Cloned $OWNER/ast-classes-core"
+            exit 0
+          fi
+
+          git clone --depth 1 "https://github.com/jurgenei/ast-classes-core.git" "$ROOT_PARENT/ast-classes-core"
+
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x ./gradlew
 
@@ -90,4 +109,3 @@ jobs:
           echo "### Codecov upload skipped" >> "$GITHUB_STEP_SUMMARY"
           echo "- Missing repository secret: CODECOV_TOKEN" >> "$GITHUB_STEP_SUMMARY"
           echo "- Add it in GitHub Settings > Secrets and variables > Actions" >> "$GITHUB_STEP_SUMMARY"
-
