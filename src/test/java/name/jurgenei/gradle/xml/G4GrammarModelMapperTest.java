@@ -25,6 +25,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 
+import org.gradle.api.GradleException;
+
+import java.lang.reflect.Method;
+
 public class G4GrammarModelMapperTest {
 
     @Rule
@@ -114,6 +118,65 @@ public class G4GrammarModelMapperTest {
         Assert.assertTrue(ast.relations().contains(new AstRelation("Procedure", "param", "Identifier", Cardinality.STAR, RelationKind.REL)));
         Assert.assertTrue(ast.relations().contains(new AstRelation("Procedure", "plusOne", "Identifier", Cardinality.PLUS, RelationKind.REL)));
         Assert.assertTrue(ast.relations().contains(new AstRelation("Procedure", "alt", "Identifier", Cardinality.OPTIONAL, RelationKind.REL)));
+    }
+
+    @Test
+    public void fallsBackWhenConfiguredClassesAreNotAntlrTypes() throws Exception {
+        final File grammarFile = temporaryFolder.newFile("invalid-types.g4");
+        Files.writeString(grammarFile.toPath(), """
+                grammar Mini;
+                entry : nameToken ;
+                nameToken : ID ;
+                ID : 'x' ;
+                """, StandardCharsets.UTF_8);
+
+        final GrammarModel model = new G4GrammarModelMapper().map(
+                grammarFile,
+                "java.lang.String",
+                "java.lang.String",
+                "grammarSpec",
+                getClass().getClassLoader());
+
+        Assert.assertFalse(model.rules().isEmpty());
+    }
+
+    @Test(expected = GradleException.class)
+    public void throwsWhenTextFallbackCannotReadFile() {
+        final File unreadable = new File("/this/path/does/not/exist/missing.g4");
+        new G4GrammarModelMapper().map(
+                unreadable,
+                "missing.Lexer",
+                "missing.Parser",
+                "grammarSpec",
+                getClass().getClassLoader());
+    }
+
+    @Test
+    public void privateParsersHandleNestedFormsAndEscapes() throws Exception {
+        final G4GrammarModelMapper mapper = new G4GrammarModelMapper();
+
+        final GrammarRule nested = new GrammarRule("nested", invokeNode(mapper, "parseRuleBody", "  (a | b)  |  'x'  "));
+        final GrammarRule quantified = new GrammarRule("quantified", invokeNode(mapper, "parseRuleBody", "a? b* c+ d<ctx> . ~X"));
+        final GrammarRule empty = new GrammarRule("empty", invokeNode(mapper, "parseRuleBody", " | "));
+
+        final String text = new G4GrammarModelSexprWriter().write(new GrammarModel(List.of(nested, quantified, empty)));
+
+        Assert.assertTrue(text.contains("(choice"));
+        Assert.assertTrue(text.contains("(optional (ruleRef a))"));
+        Assert.assertTrue(text.contains("(repeat (ruleRef b))"));
+        Assert.assertTrue(text.contains("(repeat1 (ruleRef c))"));
+        Assert.assertTrue(text.contains("(ruleRef d)"));
+        Assert.assertTrue(text.contains("(literal \".\")"));
+        Assert.assertTrue(text.contains("(literal \"~X\")"));
+    }
+
+    private static name.jurgenei.ast.core.model.GrammarNode invokeNode(
+            final G4GrammarModelMapper mapper,
+            final String method,
+            final String input) throws Exception {
+        final Method m = G4GrammarModelMapper.class.getDeclaredMethod(method, String.class);
+        m.setAccessible(true);
+        return (name.jurgenei.ast.core.model.GrammarNode) m.invoke(mapper, input);
     }
 
     @Test
