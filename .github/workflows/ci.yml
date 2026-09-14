@@ -1,4 +1,4 @@
-name: CI
+tname: CI
 
 on:
   push:
@@ -45,8 +45,32 @@ jobs:
           echo "Could not clone required gradle-antlr-plugin"
           exit 1
 
+        - name: Ensure ast-classes-core is available
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT_PARENT="$(dirname "$GITHUB_WORKSPACE")"
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+
+          if [ -d "$ROOT_PARENT/ast-classes-core/.git" ]; then
+            echo "ast-classes-core already present"
+            exit 0
+          fi
+
+          if git clone --depth 1 "https://github.com/$OWNER/ast-classes-core.git" "$ROOT_PARENT/ast-classes-core"; then
+            echo "Cloned $OWNER/ast-classes-core"
+            exit 0
+          fi
+
+          if git clone --depth 1 "https://github.com/jurgenei/ast-classes-core.git" "$ROOT_PARENT/ast-classes-core"; then
+            echo "Cloned jurgenei/ast-classes-core"
+            exit 0
+          fi
+
+          echo "Could not clone required ast-classes-core"
+          exit 1
+
       - name: Run tests
         run: |
           chmod +x ./gradlew
           ./gradlew --no-daemon --stacktrace :test
-
