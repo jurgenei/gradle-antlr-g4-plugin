@@ -33,7 +33,7 @@ gradlePlugin {
     plugins {
         xmlAstG4 {
             id = 'name.jurgenei.gradle.antlr.g4'
-            implementationClass = 'name.jurgenei.gradle.antlr.XmlAstG4Plugin'
+            implementationClass = 'name.jurgenei.gradle.antlr.LegacyG4RedirectPlugin'
             displayName = 'Gradle ANTLR G4 Plugin'
             description = 'Preconfigured XML AST task support for ANTLRv4 grammar files.'
             tags.set(['antlr', 'xml', 'ast', 'g4'])
