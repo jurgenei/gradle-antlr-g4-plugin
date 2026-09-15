@@ -1,4 +1,4 @@
-# antlr-grammars-g4
+# antlr-grammars-g4 (obsolete: functionality has moved into antlr-grammars)
 
 ![Conformance](https://img.shields.io/badge/Conformance-Check--All%20Passing-brightgreen)
 
