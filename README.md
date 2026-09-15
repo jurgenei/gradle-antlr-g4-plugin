@@ -1,4 +1,4 @@
-# antlr-grammars-g4
+# antlr-grammars-g4 (Compatibility Shim)
 
 ![Conformance](https://img.shields.io/badge/Conformance-Check--All%20Passing-brightgreen)
 
@@ -12,9 +12,30 @@
 [![Gradle](https://img.shields.io/badge/gradle-8+-blue.svg)](https://gradle.org/)
 ![ANTLR](https://img.shields.io/badge/ANTLR-4.13.x-blue)
 
-ANTLR v4 self-grammar module extracted from `gradle-antlr-xml-plugin`.
+Status: deprecated compatibility plugin id.
 
-This repository packages ANTLR v4 grammar (`ANTLRv4Lexer.g4` / `ANTLRv4Parser.g4`) and validates against real `.g4` samples in test resources.
+This module now reroutes to merged implementation in `gradle-antlr-plugin`.
+
+Use this id only for backward compatibility:
+
+- `name.jurgenei.gradle.antlr.g4` (legacy, rerouted)
+- preferred: `name.jurgenei.gradle.antlr` (merged core)
+
+Both expose `g4XmlAst` and `g4ToClass` during transition window.
+
+Planned retirement: after 2 release cycles.
+
+## Migration
+
+Replace plugin id in builds:
+
+```groovy
+plugins {
+    id 'name.jurgenei.gradle.antlr' version '0.1.1'
+}
+```
+
+Keep task config unchanged (`g4XmlAst`, `g4ToClass`).
 
 ## What this repo contains
 
@@ -69,7 +90,7 @@ Notes:
 - If `modelOutput` omitted, task auto-derives it from `output` using `.model.sexp` extension.
 - In file-tree mode, `outputDir` is required.
 
-## Quick start
+## Quick start (legacy id)
 
 ```bash
 ./gradlew clean test
