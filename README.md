@@ -1,4 +1,6 @@
-# antlr-grammars-g4
+# gradle-antlr-g4-plugin
+
+Obsolete! functionality has been moved to gradle-antlr-plugin. Task g4ToClass et.al. is more at home there.
 
 ![Conformance](https://img.shields.io/badge/Conformance-Check--All%20Passing-brightgreen)
 
